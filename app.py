@@ -4,6 +4,7 @@ Visualizes multi-agent message streams, state graphs, execution terminals,
 syntax-highlighted code, and 15-problem empirical benchmark evaluations.
 """
 
+import os
 import streamlit as st
 import time
 import json
@@ -364,7 +365,8 @@ if state:
                     use_container_width=True
                 )
             with c_d2:
-                with open("benchmark_report.md", "r", encoding="utf-8") if os.path.exists("benchmark_report.md") else open("README.md", "r") as f:
+                report_file = "benchmark_report.md" if os.path.exists("benchmark_report.md") else "README.md"
+                with open(report_file, "r", encoding="utf-8") as f:
                     rep_text = f.read()
                 st.download_button(
                     "📄 Download Academic Report (Markdown)",
