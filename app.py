@@ -116,7 +116,7 @@ else:
             break
 
 user_prompt = st.sidebar.text_area("Task Requirements", value=default_prompt, height=120)
-run_button = st.sidebar.button("🚀 Run Multi-Agent Pipeline", type="primary", use_container_width=True)
+run_button = st.sidebar.button("🚀 Run Multi-Agent Pipeline", type="primary", width="stretch")
 
 # Session state initialization
 if "pipeline_state" not in st.session_state:
@@ -301,7 +301,7 @@ if state:
 
         bm_col1, bm_col2 = st.columns([1, 3])
         with bm_col1:
-            run_bm_all = st.button("▶ Run All 15 CS Benchmarks", type="primary", use_container_width=True)
+            run_bm_all = st.button("▶ Run All 15 CS Benchmarks", type="primary", width="stretch")
             bm_limit = st.slider("Benchmark Challenge Count", min_value=1, max_value=15, value=15)
 
         if run_bm_all:
@@ -352,7 +352,7 @@ if state:
                     "Duration (s)": r.duration_seconds
                 })
             df = pd.DataFrame(table_data)
-            st.dataframe(df, use_container_width=True)
+            st.dataframe(df, width="stretch")
 
             # Export download buttons
             c_d1, c_d2 = st.columns(2)
@@ -362,7 +362,7 @@ if state:
                     data=json.dumps(s.model_dump(), indent=2),
                     file_name="devteam_benchmark_results.json",
                     mime="application/json",
-                    use_container_width=True
+                    width="stretch"
                 )
             with c_d2:
                 report_file = "benchmark_report.md" if os.path.exists("benchmark_report.md") else "README.md"
@@ -373,7 +373,7 @@ if state:
                     data=rep_text,
                     file_name="devteam_academic_report.md",
                     mime="text/markdown",
-                    use_container_width=True
+                    width="stretch"
                 )
 
 else:
@@ -389,4 +389,4 @@ else:
             "Algorithmic Approach": v["spec"].get("algorithmic_approach", "N/A"),
             "Boundary Edge Cases": len(v["spec"].get("edge_cases", []))
         })
-    st.dataframe(pd.DataFrame(cards), use_container_width=True)
+    st.dataframe(pd.DataFrame(cards), width="stretch")

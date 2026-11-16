@@ -48,6 +48,8 @@ class SandboxExecutor:
                 "pytest",
                 "-v",
                 "--tb=short",
+                "-W",
+                "ignore",
                 "test_solution.py"
             ]
 
