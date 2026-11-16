@@ -118,6 +118,32 @@ else:
 user_prompt = st.sidebar.text_area("Task Requirements", value=default_prompt, height=120)
 run_button = st.sidebar.button("🚀 Run Multi-Agent Pipeline", type="primary", width="stretch")
 
+st.sidebar.divider()
+st.sidebar.subheader("📄 Project Reports")
+docx_path = "DEVTEAM_AI_FINAL_PROJECT_REPORT.docx"
+if os.path.exists(docx_path):
+    with open(docx_path, "rb") as f:
+        docx_bytes = f.read()
+    st.sidebar.download_button(
+        "📘 Download Report (Word .docx)",
+        data=docx_bytes,
+        file_name="DEVTEAM_AI_FINAL_PROJECT_REPORT.docx",
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        width="stretch"
+    )
+
+report_file = "FINAL_PROJECT_REPORT.md" if os.path.exists("FINAL_PROJECT_REPORT.md") else ("benchmark_report.md" if os.path.exists("benchmark_report.md") else "README.md")
+if os.path.exists(report_file):
+    with open(report_file, "r", encoding="utf-8") as f:
+        rep_text = f.read()
+    st.sidebar.download_button(
+        "📄 Download Report (Markdown)",
+        data=rep_text,
+        file_name="DEVTEAM_AI_PROJECT_REPORT.md",
+        mime="text/markdown",
+        width="stretch"
+    )
+
 # Session state initialization
 if "pipeline_state" not in st.session_state:
     st.session_state.pipeline_state = None
@@ -355,7 +381,7 @@ if state:
             st.dataframe(df, width="stretch")
 
             # Export download buttons
-            c_d1, c_d2 = st.columns(2)
+            c_d1, c_d2, c_d3 = st.columns(3)
             with c_d1:
                 st.download_button(
                     "📥 Download Benchmark JSON",
@@ -365,16 +391,28 @@ if state:
                     width="stretch"
                 )
             with c_d2:
-                report_file = "benchmark_report.md" if os.path.exists("benchmark_report.md") else "README.md"
+                report_file = "FINAL_PROJECT_REPORT.md" if os.path.exists("FINAL_PROJECT_REPORT.md") else ("benchmark_report.md" if os.path.exists("benchmark_report.md") else "README.md")
                 with open(report_file, "r", encoding="utf-8") as f:
                     rep_text = f.read()
                 st.download_button(
-                    "📄 Download Academic Report (Markdown)",
+                    "📄 Download Project Report (Markdown)",
                     data=rep_text,
-                    file_name="devteam_academic_report.md",
+                    file_name="DEVTEAM_AI_PROJECT_REPORT.md",
                     mime="text/markdown",
                     width="stretch"
                 )
+            with c_d3:
+                docx_path = "DEVTEAM_AI_FINAL_PROJECT_REPORT.docx"
+                if os.path.exists(docx_path):
+                    with open(docx_path, "rb") as f:
+                        docx_bytes = f.read()
+                    st.download_button(
+                        "📘 Download Project Report (Word .docx)",
+                        data=docx_bytes,
+                        file_name="DEVTEAM_AI_FINAL_PROJECT_REPORT.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        width="stretch"
+                    )
 
 else:
     st.info("👈 Select a benchmark problem from the sidebar and click **'Run Multi-Agent Pipeline'** to launch the LangGraph autonomous development loop.")
