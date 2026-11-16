@@ -5,3 +5,13 @@ __pycache__/
 *.log
 .env
 .DS_Store
+
+# Reports and document generators
+*.docx
+*REPORT*.md
+*report*.md
+generate_docx_report.py
+
+# Screenshots and media assets
+assets/screenshots/
+assets/

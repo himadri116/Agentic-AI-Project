@@ -21,56 +21,17 @@ That is **DevTeam AI**. It runs 6 specialized agents in a cyclic state graph usi
 
 ---
 
-## 📸 See It In Action (Streamlit Observability Console)
+## Interactive Streamlit Observability Console
 
-Here is the live dashboard running on my local machine:
+The framework includes an interactive web dashboard built with Streamlit (`app.py`) providing real-time visibility across the entire engineering lifecycle:
 
-### 1. Control Panel & 15 Classic CS Challenges
-You can pick between our **Autonomous Engine** (runs 100% offline with zero API key dependencies), **Google Gemini API**, or **Local Ollama**. Pick any problem from the dropdown and hit Run.
-
-![System Control Panel](./assets/screenshots/fig1_system_control_preview.png)
-
----
-
-### 2. Live LangGraph Cyclic State Machine & KPI Status
-As soon as you click Run, the state machine transitions through the agents, displaying the active phase, self-healing cycles, test pass counts, and MTTR latency in real time.
-
-![KPI Status Bar and State Machine Flowchart](./assets/screenshots/fig2_kpi_state_graph.png)
-
----
-
-### 3. The Blackboard Message Bus
-Watch the agents communicate in real time. The Architect outlines invariants, the Developer writes the logic, the QA agent writes edge-case tests, and the Sandbox executes them.
-
-![Blackboard Bus Message Timeline](./assets/screenshots/fig3_blackboard_timeline.png)
-
----
-
-### 4. Syntax-Highlighted Code Viewer
-Inspect `solution.py` and `test_solution.py` directly in the browser with full type annotations, docstrings, and AST validation.
-
-![Code Specification Viewer](./assets/screenshots/fig4_code_spec_viewer.png)
-
----
-
-### 5. Real Pytest Execution in an Isolated Subprocess
-No mock testing—this runs actual `pytest -v` inside a temporary OS scratch directory with strict timeout protection.
-
-![Pytest Sandbox Execution Terminal](./assets/screenshots/fig5_sandbox_terminal.png)
-
----
-
-### 6. Algorithmic Complexity Profiler (Documenter Agent)
-Once all tests pass, the Documenter agent calculates asymptotic Big-O time and space complexity, explains the math, and generates Sphinx/Google docstrings.
-
-![Documenter Complexity Profiler](./assets/screenshots/fig6_documentation_big_o.png)
-
----
-
-### 7. The 15-Problem Verification Benchmark Suite
-One click runs all 15 classic computer science challenges sequentially, tracking Pass@1, Pass@2 (Self-Healed), and MTTR scorecards with JSON/Markdown export.
-
-![15-Problem Benchmark Suite](./assets/screenshots/fig7_benchmark_suite.png)
+1. **System Control Panel:** Configure the runtime mode (Autonomous Engine with zero external dependencies, Google Gemini API, or Local Ollama), set self-healing iteration limits (1 to 5), configure sandbox execution timeouts, and select from 15 classic computer science challenges.
+2. **Real-Time KPI Status & State Graph:** Live KPI cards display the system state (`VERIFIED`), current active phase, self-healing retry counter, unit tests passed, and resolution latency alongside a visual state machine flowchart.
+3. **Blackboard Message Bus:** Chronological timeline showing structured inter-agent message exchanges as each agent completes its deliverable.
+4. **Code & Architecture Spec Viewer:** Syntax-highlighted code viewers with line numbers for `solution.py`, `test_solution.py`, and the formal JSON architecture specification.
+5. **Execution Sandbox Terminal:** Live terminal output showing real Pytest execution logs (passed/failed counters, execution durations, exit codes) in isolated temporary directories.
+6. **Algorithmic Complexity Profiler:** Asymptotic Big-O time and space complexity analysis, mathematical rationale, Sphinx/Google docstrings, and module documentation.
+7. **15-Challenge Benchmark Suite:** One-click execution runner that tests the multi-agent pipeline across all 15 classic computer science challenges.
 
 ---
 
@@ -202,11 +163,9 @@ Agentic-AI-Project/
 │       ├── suite.py          # 15-problem benchmark runner
 │       └── metrics.py        # Pass@1, Pass@2, MTTR calculator
 ├── tests/                    # Project unit tests (sandbox, state graph, benchmarks)
-├── assets/screenshots/       # Dashboard demo screenshots
 ├── app.py                    # Streamlit Observability Console
 ├── main.py                   # Main CLI entry point
-├── benchmark_runner.py       # Academic benchmark evaluation CLI
-├── FINAL_PROJECT_REPORT.md   # Comprehensive academic final report
+├── benchmark_runner.py       # Benchmark evaluation CLI
 ├── requirements.txt          # Python dependencies
 └── pytest.ini                # Pytest configuration
 ```
@@ -216,4 +175,3 @@ Agentic-AI-Project/
 ## 🎓 Academic Coursework Details
 - **Author:** Himadri Bahuguna (Enrollment No.: BT23GCS204)
 - **Course:** ET 4-1 Learning Technologies Project Course
-- **Full Report:** See [`FINAL_PROJECT_REPORT.md`](./FINAL_PROJECT_REPORT.md) for the complete academic methodology, mathematical framing, and audit logs.
