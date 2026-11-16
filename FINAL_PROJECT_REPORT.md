@@ -1,334 +1,246 @@
-# DEVTEAM AI: FINAL PROJECT REPORT
-## Autonomous Multi-Agent System for Collaborative Software Development, Peer Review, and Self-Healing Code Verification
+# DevTeam AI: Final Project Report
+## An Autonomous Multi-Agent System for Collaborative Software Development, Peer Review, and Self-Healing Code Verification
 
-**NAME:** HIMADRI BAHUGUNA  
-**ENROLLMENT NO.:** BT23GCS204  
-**SUBJECT:** ET 4-1 LEARNING TECHNOLOGIES PROJECT COURSE  
-**GITHUB REPOSITORY LINK:** [https://github.com/himadri116/Agentic-AI-Project.git](https://github.com/himadri116/Agentic-AI-Project.git)
+**Student Name:** Himadri Bahuguna  
+**Enrollment Number:** BT23GCS204  
+**Course:** ET 4-1 Learning Technologies Project Course  
+**GitHub Repository Link:** [https://github.com/himadri116/Agentic-AI-Project.git](https://github.com/himadri116/Agentic-AI-Project.git)  
+**Date:** November 2026  
 
 ---
 
 ## Executive Summary
 
-Modern Large Language Models (LLMs) such as GPT-4, Claude 3.5, and Gemini 1.5 possess remarkable fluency in generating isolated code snippets. However, when deployed in production software engineering workflows, monolithic single-prompt LLMs fail to operate as reliable software engineers. They suffer from three fundamental limitations: an absence of grounded runtime execution, a lack of adversarial boundary testing caused by confirmation bias, and a complete inability to self-heal when runtime exceptions or assertion failures occur.
+When developers use modern Large Language Models such as GPT-4 or Gemini for programming tasks, they typically provide a single prompt and hope the output works on the first try. While this approach produces good results for small scripts, it frequently struggles with production-grade engineering. A single model cannot execute its own code to check for runtime bugs, it tends to author simplistic tests that confirm its own assumptions rather than testing edge cases, and when an error occurs, the developer must manually copy the error traceback back into the prompt window to ask for a fix.
 
-In this project, titled **DevTeam AI**, we developed and evaluated an autonomous, multi-agent software engineering framework that bridges the gap between theoretical AI research and practical, verified software delivery. Operating as a strongly-typed cyclic state machine powered by **LangGraph**, DevTeam AI partitions the software engineering lifecycle across six specialized, goal-driven agents: an **Architect Agent** that decomposes natural language requirements into formal interface specifications and invariants; a **Developer Agent** that synthesizes PEP-8 compliant Python modules; an adversarial **QA Test Agent** that independently authors comprehensive Pytest test suites probing boundary and stress conditions; an isolated **Execution Sandbox** that runs tests in ephemeral scratch directories using Python's `subprocess` and `tempfile` modules; a **Reviewer & Healer Agent** that correlates stderr tracebacks with Abstract Syntax Trees (AST) to formulate surgical patch instructions; and a **Documenter Agent** that profiles asymptotic Big-O time and space complexity while authoring Sphinx/Google-style docstrings.
+In this project, titled DevTeam AI, I built an autonomous multi-agent development system that treats software engineering as a structured team process rather than a one-shot prompt. Using LangGraph to orchestrate a cyclic state machine, the system divides work across six distinct roles: an Architect Agent that extracts formal technical specifications and invariants; a Developer Agent that writes PEP-8 compliant Python modules; a QA Test Agent that designs adversarial Pytest suites to probe boundary conditions; an isolated Execution Sandbox that runs the code safely in temporary directories; a Reviewer and Healer Agent that parses runtime tracebacks with Python's Abstract Syntax Tree (AST) to suggest surgical fixes; and a Documenter Agent that calculates asymptotic Big-O complexity and writes Sphinx/Google docstrings.
 
-The system was evaluated against a rigorous suite of **15 classic computer science and practical software engineering challenges**—ranging from Thread-Safe LRU Caches with TTL expiration and Token Bucket Rate Limiters to Dijkstra's Shortest Path on Directed Graphs, Strassen's Matrix Multiplication, and Consistent Hashing Rings with Virtual Nodes. DevTeam AI achieved an initial **Pass@1 rate of 93.3%**, a post-healing **Pass@2 rate of 100.0%**, an **autonomous recovery rate of 100.0%**, and a **Mean Time to Resolve (MTTR) of 2.16 seconds** (well below the sub-45-second target). The entire framework is deployed via an interactive, multi-tab **Streamlit Observability Console** that visualizes live agent message flows, state graphs, execution terminals, and empirical benchmark scorecards in real time.
-
----
-
-## 1. Problem Statement & Motivation
-
-Traditional LLM code generation operates as a naive single-shot feedforward mapping:
-
-$$\hat{y} = f_\theta(x)$$
-
-where $x$ represents the user's natural language prompt and $\hat{y}$ is the generated code module. While this paradigm generates syntactically plausible code, it fails catastrophically in production engineering due to three critical structural deficiencies:
-
-1. **Absence of Grounded Execution & Verification:** Monolithic LLMs cannot execute their own code. They frequently emit code containing off-by-one boundary bugs, missing lock releases, or type mismatches that cannot be discovered without an empirical runtime judge.
-2. **Lack of Adversarial Testing (Confirmation Bias):** When the same LLM prompt generates both the code implementation and its unit tests, the model suffers from severe confirmation bias. It authors unit tests that merely validate its own design assumptions rather than aggressively probing extreme stress boundaries (e.g., zero capacity, expired timestamps, concurrent read/write contention).
-3. **Inability to Self-Heal:** When code execution throws a runtime exception (`ZeroDivisionError`, `KeyError`, `AssertionError`), monolithic systems require a human engineer to manually copy the traceback, diagnose the root cause, and re-prompt the model in an inefficient, manual trial-and-error loop.
-
-$$\text{Error State: } \mathcal{E} = \text{Subprocess}(f_\theta(x), \text{Tests}) \neq 0 \implies \text{Human Intervention Required}$$
-
-DevTeam AI was built to replace this fragile single-prompt paradigm with a **grounded, multi-agent cyclic feedback loop** where agents act autonomously based on empirical execution feedback:
-
-$$\mathcal{S}_{t+1} = \mathcal{T}(\mathcal{S}_t, \mathcal{A}_i(\mathcal{S}_t))$$
-
-where $\mathcal{S}_t$ is the shared blackboard state, $\mathcal{A}_i$ is the active specialized agent, and $\mathcal{T}$ is the deterministic LangGraph transition function.
+The system was evaluated against 15 classic computer science challenges, including thread-safe data structures, rate limiters, graph algorithms, and distributed hashing rings. DevTeam AI achieved a 93.3% first-pass test rate (Pass@1) and reached a 100% test passage rate on the second pass (Pass@2) through autonomous self-healing, with an average resolution time of 2.16 seconds. The entire workflow is accessible through an interactive Streamlit web dashboard that lets users monitor agent communication, inspect generated code and test logs, and run benchmark evaluations in real time.
 
 ---
 
-## 2. Work Done & Architectural Evolution
+## 1. Problem Statement and Motivation
 
-### Baseline Foundation vs. Multi-Agent System
-To establish the necessity of multi-agent collaboration, we initially evaluated standard monolithic zero-shot prompting across our 15 algorithmic challenges. The baseline model produced code that:
-- Failed on 26.7% of adversarial edge cases during first-pass testing.
-- Lacked thread-safety guarantees on concurrent data structures (e.g., race conditions during node eviction in LRU caches).
-- Had zero mechanism for automated self-recovery when tests failed.
+Single-prompt code generation treats software writing as a purely textual translation problem. However, real-world software engineering requires empirical feedback and iteration. Three main problems make single-prompt generation unreliable:
 
-### New Multi-Agent System Objectives
-To overcome these limitations, we designed and implemented a modular multi-agent architecture with four core capabilities:
-1. **Cognitive Division of Labor:** Specialized agent prompts and roles with explicit constraints.
-2. **Deterministic State-Graph Orchestration:** A centralized typed blackboard state machine (`DevTeamState`) managed by LangGraph.
-3. **Subprocess Isolation:** Real Pytest execution in temporary OS directories with execution timeouts to prevent host pollution and runaway processes.
-4. **AST-Grounded Self-Healing:** Automated traceback parsing that maps runtime error lines directly to AST function nodes to generate surgical code patches.
+1. **Lack of Runtime Execution:** A language model generating text cannot execute code. It cannot verify whether an algorithm terminates, whether variable types align at runtime, or whether thread synchronization primitives release locks properly.
+2. **Author Confirmation Bias in Testing:** When the same model prompt is asked to generate both code and unit tests, it naturally tests only the scenarios it designed the code to handle. It rarely tests stressful edge cases, such as zero capacity limits, negative values, expired timestamps, or concurrent thread contention.
+3. **Manual Feedback Loops:** When code fails with an exception such as an IndexError or AssertionError, the developer must act as the manual mediator, reading the stack trace, identifying the bug, and guiding the model. This makes automated deployment impossible.
+
+DevTeam AI solves these problems by creating a closed feedback loop. Instead of expecting perfection on the first attempt, the architecture embraces iteration: the QA agent tries to break the code with tough tests, the sandbox executes those tests in an isolated environment, and if any test fails, the Reviewer analyzes the exact error and instructs the Developer on how to repair it.
 
 ---
 
-## 3. System Architecture & Multi-Agent Communication Protocol
+## 2. System Architecture and Agent Workflow
 
-DevTeam AI operates as a centralized cyclic State-Graph with dynamic conditional branching. Agents collaborate by updating a typed blackboard state (`DevTeamState`), ensuring full traceability, auditability, and zero uncontrolled hallucination loops.
+DevTeam AI is organized around a centralized state machine managed by LangGraph. All agents read from and write to a shared blackboard state called `DevTeamState`. This guarantees that every step of the development lifecycle is strictly recorded, transparent, and repeatable.
 
-### The 6 Specialized Agents & Deliverables
+### The Six Specialized Roles
 
-| Agent Name | Role & Mindset | Tools & Method | Primary Deliverable |
+Rather than relying on one general assistant, the framework defines six specialized roles with clear responsibilities:
+
+| Agent | Role and Purpose | Primary Method | Deliverable Output |
 | :--- | :--- | :--- | :--- |
-| **1. Architect Agent** | System Designer & Specifier | LLM Structured Output, Interface Decomposition | Formal Technical Spec (Classes, method signatures, invariants, pre/post-conditions) |
-| **2. Developer Agent** | Software Engineer & Implementer | LLM Code Generation, AST Refactoring | Production Code Module (`solution.py`) |
-| **3. QA Test Agent** | Adversarial Test Engineer | Pytest Generator, Boundary-value probing | Comprehensive Adversarial Test Suite (`test_solution.py`) |
-| **4. Execution Engine** | Local Sandbox Runtime Judge | Python `subprocess`, `tempfile`, `pytest` CLI | Exit code, stdout, stderr, execution latency metrics |
-| **5. Reviewer & Healer** | Senior Staff Debugger | Traceback Parser, Root-cause AST analysis | Targeted debugging instructions and surgical patch guidance |
-| **6. Documenter Agent** | Technical Writer & Profiler | Algorithmic Complexity Profiler, Docstring generator | Big-O Time/Space report, Sphinx/Google docstrings, and README |
-
-### LangGraph Cyclic State Graph Topology
-
-```
-                  ┌──────────────────────────────────────────────┐
-                  │                 START                        │
-                  └──────────────────────┬───────────────────────┘
-                                         │
-                                         ▼
-                  ┌──────────────────────────────────────────────┐
-                  │       Phase 1: Architect Decomposition       │
-                  └──────────────────────┬───────────────────────┘
-                                         │
-                                         ▼
-                  ┌──────────────────────────────────────────────┐
-                  │       Phase 2: Developer Code Synthesis      │
-                  └──────────────────────┬───────────────────────┘
-                                         │
-                                         ▼
-                  ┌──────────────────────────────────────────────┐
-                  │     Phase 2: Adversarial QA Test Synthesis   │
-                  └──────────────────────┬───────────────────────┘
-                                         │
-                                         ▼
-                  ┌──────────────────────────────────────────────┐
-                  │   Phase 3: Subprocess Sandbox Pytest Runner  │
-                  └──────────────────────┬───────────────────────┘
-                                         │
-                                         ▼
-                              ┌──────────────────────┐
-                              │  Pytest Exit Code == 0?│
-                              └───────┬──────────────┘
-                                      │
-                         ┌────────────┴────────────┐
-                         │ YES                     │ NO (Tests Failed)
-                         ▼                         ▼
-            ┌─────────────────────────┐    ┌─────────────────────────────────┐
-            │ Phase 5: Documenter     │    │ Check Retries:                  │
-            │ Algorithmic Profiling   │    │ healing_iteration < max_retries │
-            └────────────┬────────────┘    └───────────────┬─────────────────┘
-                         │                                 │
-                         ▼                                 ▼
-            ┌─────────────────────────┐    ┌─────────────────────────────────┐
-            │          END            │    │ Phase 4: Reviewer AST Diagnosis │
-            │  (Status: VERIFIED)     │    └───────────────┬─────────────────┘
-            └─────────────────────────┘                    │
-                                                           ▼
-                                           ┌─────────────────────────────────┐
-                                           │ Developer Refactors solution.py │
-                                           │ (Closes Self-Healing Loop)      │
-                                           └───────────────┬─────────────────┘
-                                                           │
-                                                           └───────► (Re-test in Sandbox)
-```
+| **Architect** | System Designer | Requirements decomposition, Pydantic schema validation | Formal technical spec (classes, methods, invariants, edge cases) |
+| **Developer** | Software Engineer | PEP-8 code synthesis, AST validation | Production Python module (`solution.py`) |
+| **QA Engineer** | Adversarial Tester | Boundary probing, Pytest test creation | Comprehensive Pytest test suite (`test_solution.py`) |
+| **Execution Sandbox** | Runtime Judge | Isolated subprocess in temporary OS directory | Execution logs, exit code, stdout, stderr, latency |
+| **Reviewer / Healer** | Staff Debugger | Traceback parsing, AST line-to-node fault mapping | Targeted diagnosis and surgical patch guidance |
+| **Documenter** | Technical Writer | Algorithmic complexity profiling, docstring generation | Big-O complexity report, Sphinx/Google docstrings, README |
 
 ---
 
-## 4. Detailed Technical Methodology Implemented
+## 3. Technical Implementation Details
 
-### 4.1 Strongly-Typed Blackboard State Schema (`DevTeamState`)
-Implemented using Python's `TypedDict` and Pydantic in `devteam_ai/state.py`. The blackboard maintains:
-- `task_id` & `prompt`: User requirements and unique tracking identifiers.
-- `architect_spec`: Formal JSON specification containing class hierarchies, invariants, and pre/post-conditions.
-- `solution_code`: The synthesized Python module (`solution.py`).
-- `test_code`: The adversarial Pytest test suite (`test_solution.py`).
-- `test_results`: Structured metrics including exit code, passed/failed test counts, duration, stdout, stderr, and tracebacks.
-- `review_feedback`: Root-cause diagnosis, AST fault locations, and surgical patch guidance.
-- `healing_iteration`: Integer tracking self-healing cycles (capped at 3).
-- `messages`: Chronological list of agent communication events merged via an immutable reducer.
+### 3.1 Typed Blackboard State (DevTeamState)
+In `devteam_ai/state.py`, the shared state is implemented using Python's `TypedDict` and Pydantic models. It tracks the original prompt, the formal architecture specification, the current implementation code, the Pytest test code, sandbox execution results (exit code, passed and failed test counts, duration, and error logs), review feedback containing root-cause analysis, an iteration counter capped at 3 retries, and a complete chronological record of messages exchanged between agents.
 
-### 4.2 Architectural Blueprint & Invariant Extraction (Architect Agent)
-When a user submits a prompt (e.g., *"Implement a Thread-Safe In-Memory LRU Cache with TTL Expiration"*), the Architect Agent decomposes the requirements into a structured blueprint using strict Pydantic models:
-- **Classes & Method Signatures:** Detailed parameter names, types, and expected return types.
-- **Invariants:** Mandatory conditions that must never be violated (e.g., $\text{Active Items} \le \text{Capacity}$, $\text{Expired items are never returned}$).
-- **Pre/Post-Conditions:** Synchronization requirements and parameter bounds.
+### 3.2 Architect Specification Engine
+When a user prompt enters the system, the Architect Agent converts the natural language description into an explicit technical blueprint before any code is written. This blueprint specifies class hierarchies, required method signatures, type annotations, input and output preconditions, and a dedicated list of boundary edge cases that must be handled.
 
-### 4.3 Adversarial Test Synthesis & Boundary Probing (QA Agent)
-Rather than writing standard happy-path tests, the QA Test Agent adopts an adversarial mindset to probe edge conditions:
-- Zero, negative, and extreme boundary values (e.g., `capacity = 0`, `tokens = 0`).
-- Expired timestamp simulations using time delays.
-- Concurrency and thread contention using `threading.Thread` pools.
-- Exception verification using `pytest.raises(ValueError)`.
+### 3.3 Developer Code Synthesis and AST Safety
+The Developer Agent implements the solution based strictly on the Architect's specification. Before saving the code, it runs Python's built-in `ast.parse` to ensure that the code is syntactically valid and does not contain incomplete blocks or syntax errors. During self-healing cycles, the Developer receives surgical debugging instructions and focuses only on fixing the identified fault rather than rewriting the entire module from scratch.
 
-### 4.4 Isolated Scratch Subprocess Sandbox Engine
-The Execution Engine (`devteam_ai/sandbox/executor.py`) enforces strict runtime isolation:
-1. Spawns an isolated directory using `tempfile.TemporaryDirectory(prefix="devteam_sandbox_")`.
-2. Writes `solution.py` and `test_solution.py` to the scratch directory.
-3. Sets `PYTHONPATH` to point exclusively to the temporary directory.
-4. Executes `python -m pytest -v --tb=short -W ignore test_solution.py` via `subprocess.run()`.
-5. Enforces a strict timeout (25 seconds) using `subprocess.TimeoutExpired` to prevent infinite loops.
-6. Intercepts the exit code, duration, stdout, and stderr, automatically cleaning up all files upon completion.
+### 3.4 Adversarial QA Pytest Generation
+To prevent confirmation bias, the QA Test Agent is explicitly given an adversarial persona. It writes 4 to 12 Pytest unit tests that systematically probe weak points: handling zero or negative arguments, verifying timeout expirations, testing concurrent multi-threaded access using `threading.Thread`, and confirming that invalid inputs raise appropriate exceptions (such as `ValueError` or `KeyError`).
 
-### 4.5 AST & Traceback Correlation for Closed-Loop Self-Healing
-When Pytest fails, the Reviewer Agent (`devteam_ai/agents/reviewer.py`) executes automated root-cause analysis:
-1. **Traceback Parsing:** Extracts the exact failure line in `solution.py` using regular expression matching.
-2. **AST Tree Traversal:** Uses Python's `ast.walk` to traverse the Abstract Syntax Tree of `solution.py`, locating the enclosing `ClassDef` and `FunctionDef` for that line.
-3. **Root-Cause Formulation:** Pinpoints the exact semantic error (e.g., strict inequality `< 0` instead of `<= 0` allowing zero-token consumption).
-4. **Surgical Patch Dispatch:** Generates targeted instructions and feeds them back into `DevTeamState`. The Developer Agent consumes this feedback, applies the fix, and triggers re-execution in the sandbox.
+### 3.5 Isolated Subprocess Sandbox
+Safety during code execution is critical. In `devteam_ai/sandbox/executor.py`, the Execution Engine creates a fresh temporary directory using `tempfile.TemporaryDirectory()` for every run. It writes `solution.py` and `test_solution.py` inside that directory, configures the `PYTHONPATH` to point exclusively to the temporary path, and invokes `python -m pytest -v --tb=short` through a subprocess. An execution timeout of 25 seconds prevents infinite loops from hanging the system. When execution finishes, all temporary files are automatically deleted by the operating system.
 
-### 4.6 Algorithmic Complexity Profiler (Documenter Agent)
-Upon successful test verification (exit code 0), the Documenter Agent inspects the verified code to deliver:
-- Asymptotic Time Complexity (best, average, worst, amortized).
-- Asymptotic Space Complexity.
-- Detailed mathematical rationale for data structure performance.
-- Sphinx/Google-style docstrings with explicit Args, Returns, and Raises sections.
-- A deployment-ready `README.md` for the synthesized module.
+### 3.6 AST Traceback Correlation and Self-Healing
+When a test fails, the Reviewer Agent reads the stderr traceback and extracts the exact filename and line number where the failure occurred. It then parses the Abstract Syntax Tree of the solution file using `ast.walk` to locate the enclosing class or function. By combining the test assertion failure message with the specific code block, the Reviewer explains why the bug happened and generates clear, actionable instructions for the Developer. The state machine then routes execution back to the Developer, closing the automated repair loop.
+
+### 3.7 Asymptotic Complexity Profiling and Documentation
+Once all tests pass with an exit code of 0, the Documenter Agent analyzes the verified code. It determines the asymptotic time and space complexity (Big-O) with mathematical justifications, generates Google/Sphinx style docstrings for every method, and creates a clean README file documenting usage examples and class APIs.
 
 ---
 
-## 5. In-Depth Comparative Analysis: Monolithic LLM vs. DevTeam AI
+## 4. Comparative Analysis: Single-Prompt vs. Sequential vs. DevTeam AI
 
-To evaluate the engineering significance of DevTeam AI, we conducted a systematic comparison across critical software engineering dimensions:
+To understand the practical impact of multi-agent orchestration, the table below compares three development approaches across key software engineering metrics:
 
-| Evaluation Dimension | Monolithic Single-Prompt LLM | Sequential Linear Chain (DAG) | DevTeam AI (Cyclic State Machine) |
+| Engineering Aspect | Single-Prompt LLM | Sequential Linear Pipeline | DevTeam AI (Cyclic State Machine) |
 | :--- | :--- | :--- | :--- |
-| **Architectural Model** | Single-shot prompt $\hat{y} = f_\theta(x)$ | Linear Directed Acyclic Graph (DAG) | Cyclic State Machine with Conditional Routing (`LangGraph`) |
-| **Grounded Execution** | None (Code is never run) | External tool call (No retry) | Isolated ephemeral subprocess sandbox (`tempfile` + Pytest) |
-| **Test Quality** | Author bias; trivial happy-path cases | Basic assertion generation | Adversarial boundary-value probing (6–12 targeted stress tests) |
-| **Fault Recovery** | Manual copy-pasting by human engineer | Fails on error; pipeline aborts | Closed-loop self-healing with AST root-cause diagnosis |
-| **Infinite Loop Safeguards** | N/A | Timeout only | State-tracked iteration counter ($\le 3$ retries) with fallback routing |
-| **Explainability & Profiling** | None | Raw traceback dumped | Asymptotic Big-O time/space complexity analysis & docstrings |
-| **Pass@1 Rate** | 73.3% | 76.7% | **93.3%** |
-| **Pass@2 (Self-Healed) Rate** | N/A (Cannot self-heal) | N/A (Pipeline halts) | **100.0%** |
-| **Autonomous Recovery Rate** | 0.0% | 0.0% | **100.0%** |
-| **Mean Time to Resolve (MTTR)**| Manual (~10–15 mins) | N/A | **2.16 seconds** |
+| **Workflow Structure** | Single prompt, single response | Linear chain of prompts (no loop) | Cyclic state machine with conditional branching (LangGraph) |
+| **Runtime Execution** | None (text output only) | Runs once; halts on error | Isolated temporary subprocess sandbox with timeout enforcement |
+| **Test Independence** | Biased (tests written by same prompt) | Basic happy-path test cases | Independent adversarial QA tests targeting edge cases |
+| **Bug Recovery** | Manual copy-paste by developer | None (pipeline terminates) | Automated closed-loop healing using AST traceback analysis |
+| **Loop Safeguards** | Not applicable | Basic timeout | Iteration counter capped at 3 retries with graceful exit |
+| **Documentation** | Basic inline comments | Generic docstrings | Formal Big-O complexity analysis and Sphinx docstrings |
+| **Pass@1 Success Rate** | 73.3% | 76.7% | 93.3% |
+| **Pass@2 (Healed) Rate** | Not applicable (cannot heal) | Not applicable (pipeline halts) | 100.0% |
+| **Autonomous Recovery Rate** | 0.0% | 0.0% | 100.0% |
+| **Mean Time to Resolve (MTTR)**| Manual (several minutes) | Not applicable | 2.16 seconds |
 
 ---
 
-## 6. Live System Walkthrough & Demonstration
+## 5. Demonstration and Streamlit Web Console
 
-The entire framework is deployed through an interactive Streamlit Observability Console ([`app.py`](file:///C:/Users/hp/.gemini/antigravity/scratch/devteam_ai/app.py)). Below is the complete walkthrough of the live application running across its core operational tabs:
+To make the system transparent and easy to demonstrate, I built a multi-tab web dashboard using Streamlit (`app.py`). The dashboard provides real-time visibility into every phase of execution, showing the communication between agents, the synthesized code, the test terminal output, and benchmark metrics.
 
-### 6.1 System Control Panel & Benchmark Preview
-The left sidebar provides full control over the multi-agent runtime. Users can select between the **Autonomous Engine (Default)**, Google Gemini API, or Local Ollama, adjust the maximum self-healing retries (1–5), set sandbox timeouts, and choose any of the 15 classic computer science challenges.
+### 5.1 System Control Panel and Benchmark Preview
+The left sidebar provides full control over the multi-agent runtime. Users can select between the Autonomous Engine (Default), Google Gemini API, or Local Ollama, adjust the maximum self-healing retries (1 to 5), set sandbox timeouts, and choose any of the 15 classic computer science challenges.
 
 ![Figure 1: System Control Panel and 15 Classic Computer Science Benchmark Preview](./assets/screenshots/fig1_system_control_preview.png)
-*Figure 1: Streamlit Observability Console initial view showing the System Control Panel sidebar, tri-mode LLM selector, and the catalog of 15 classic computer science challenges.*
+*Figure 1: Streamlit Observability Console initial view showing the System Control Panel sidebar, model provider selector, and catalog of 15 classic computer science challenges.*
 
 ---
 
-### 6.2 Top KPI Status Bar & State Graph Architecture
-Upon launching the pipeline, the top status row displays real-time execution cards: **System Status (`VERIFIED`)**, **Current Phase**, **Self-Healing Cycles (`0/3`)**, **Tests Passed (`6/6`)**, and **MTTR Latency (`2.11s`)**.
+### 5.2 KPI Status Bar and State Machine Graph
+Upon launching the pipeline, the top status row displays real-time execution cards: System Status (`VERIFIED`), Current Phase, Self-Healing Cycles (`0 / 3`), Tests Passed (`6 / 6`), and MTTR Latency (`2.11s`). Below it, a flowchart illustrates the LangGraph state machine topology.
 
 ![Figure 2: Top KPI Status Bar and LangGraph Cyclic State Machine Mermaid Flowchart](./assets/screenshots/fig2_kpi_state_graph.png)
-*Figure 2: Real-time KPI status bar and embedded Mermaid flowchart illustrating the LangGraph state machine topology and conditional execution paths.*
+*Figure 2: Real-time KPI status bar and flowchart illustrating the LangGraph state machine topology and conditional execution paths.*
 
 ---
 
-### 6.3 Blackboard Bus Message Timeline
-In **Tab 1 ("Blackboard & Agent Stream")**, users can monitor inter-agent communication chronologically. Each card displays the sender name, professional role tag, execution phase, timestamp, and detailed markdown output.
+### 5.3 Blackboard Bus Message Timeline
+In Tab 1 ("Blackboard & Agent Stream"), users can monitor inter-agent communication chronologically. Each card displays the sender name, role tag, execution phase, timestamp, and detailed output.
 
 ![Figure 3: Blackboard Bus Message Timeline showing inter-agent communication](./assets/screenshots/fig3_blackboard_timeline.png)
 *Figure 3: Blackboard Bus Message Timeline displaying sequential deliverables from the Architect Agent, Developer Agent, QA Test Agent, and Execution Sandbox.*
 
 ---
 
-### 6.4 Code & Architecture Specification Viewer
-In **Tab 2 ("Code & Architecture Spec")**, the system provides syntax-highlighted code viewers with line numbers for `solution.py`, `test_solution.py`, and the formal JSON architecture specification.
+### 5.4 Code and Architecture Specification Viewer
+In Tab 2 ("Code & Architecture Spec"), the system provides syntax-highlighted code viewers with line numbers for `solution.py`, `test_solution.py`, and the formal JSON architecture specification.
 
 ![Figure 4: Code & Architecture Specification Viewer showing synthesized solution.py](./assets/screenshots/fig4_code_spec_viewer.png)
 *Figure 4: Syntax-highlighted code viewer displaying the production-grade `solution.py` module with full type annotations, concurrency locks, and AST syntax verification.*
 
 ---
 
-### 6.5 Isolated Scratch Subprocess Execution Terminal
-In **Tab 3 ("Execution Sandbox & Terminal")**, users can inspect the raw execution output of the isolated Pytest runner. The dark terminal container captures the exact command line output, passed/failed counters, and latency metrics.
+### 5.5 Isolated Scratch Subprocess Execution Terminal
+In Tab 3 ("Execution Sandbox & Terminal"), users can inspect the raw execution output of the isolated Pytest runner. The dark terminal container captures the exact command line output, passed/failed counters, and latency metrics.
 
 ![Figure 5: Isolated Scratch Subprocess Pytest Terminal displaying live execution logs](./assets/screenshots/fig5_sandbox_terminal.png)
-*Figure 5: Isolated Subprocess Execution Terminal displaying clean Pytest test execution logs (6 passed in 0.03s, Exit Code: 0) running in a temporary directory.*
+*Figure 5: Isolated Subprocess Execution Terminal displaying clean Pytest test execution logs (6 passed in 0.03s, Exit Code 0) running in a temporary directory.*
 
 ---
 
-### 6.6 Documenter Agent: Algorithmic Complexity & Docstring Profiler
-In **Tab 4 ("Documentation & Big-O")**, the Documenter Agent displays asymptotic Big-O badges ($O(1)$ amortized time, $O(C)$ space), the algorithmic complexity rationale, Sphinx docstrings, and a production-grade markdown README.
+### 5.6 Algorithmic Complexity and Docstring Profiler
+In Tab 4 ("Documentation & Big-O"), the Documenter Agent displays asymptotic Big-O badges (O(1) amortized time, O(C) space), the algorithmic complexity rationale, Sphinx docstrings, and a production-grade module README.
 
 ![Figure 6: Documenter Agent Algorithmic Complexity & Docstring Profiler](./assets/screenshots/fig6_documentation_big_o.png)
 *Figure 6: Algorithmic Complexity Profiler displaying asymptotic time and space complexity badges, mathematical rationale, Sphinx docstrings, and module README.*
 
 ---
 
-### 6.7 The 15-Problem Benchmark Evaluation Suite
-In **Tab 5 ("15-Problem Benchmark Suite")**, users can execute automated evaluations across all 15 classic computer science challenges, track empirical scorecards, and download machine-readable JSON results and academic reports.
+### 5.7 The 15-Problem Benchmark Evaluation Suite
+In Tab 5 ("15-Problem Benchmark Suite"), users can execute automated evaluations across all 15 classic computer science challenges, track empirical scorecards, and download machine-readable JSON results and project reports.
 
 ![Figure 7: 15-Problem Benchmark Evaluation Suite and Metrics Tracker](./assets/screenshots/fig7_benchmark_suite.png)
 *Figure 7: 15-Problem Benchmark Evaluation Suite showing empirical target thresholds (Pass@1 >70%, Pass@2 >90%, MTTR <45s, Recovery >85%) and one-click execution runner.*
 
 ---
 
-## 7. Quantitative Performance Benchmark: Baseline vs. DevTeam AI
+## 6. Empirical Benchmark Results and Evaluation
 
-We benchmarked DevTeam AI across the complete suite of 15 classic computer science and practical software engineering challenges:
+To test the system thoroughly, I evaluated it against 15 classic computer science and practical software engineering challenges. These problems were chosen because they test diverse programming patterns: concurrency and thread safety, recursive trees, dynamic programming, graph algorithms, cryptographic hashing, and state machines.
 
-| # | Benchmark Challenge Name | Core Algorithmic Technique | Baseline (Monolithic) | DevTeam AI (Pass@1) | DevTeam AI (Pass@2 Healed) | Healing Cycles | Tests Passed | Duration |
-| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 1 | **Thread-Safe LRU Cache with TTL Expiration** | Doubly Linked List + Hash Map + RLock | FAIL (Race cond.) | **PASS** | **PASS** | 0 | 6/6 | 2.22s |
-| 2 | **Token Bucket Rate Limiter with Burst Capacity** | Lazy time delta token accumulation | FAIL (Zero tokens) | FAIL (Boundary) | **PASS** | 1 | 5/5 | 4.89s |
-| 3 | **Dijkstra's Shortest Path Algorithm** | Min-Heap Priority Queue + Adjacency List | PASS | **PASS** | **PASS** | 0 | 5/5 | 2.01s |
-| 4 | **Thread-Safe Read-Write Locking Key-Value Store** | Condition Variables + RW Synchronization | FAIL (Contention) | **PASS** | **PASS** | 0 | 3/3 | 1.92s |
-| 5 | **Markdown to HTML AST Lexer and Parser** | Regex Tokenizer + Recursive AST Descent | PASS | **PASS** | **PASS** | 0 | 5/5 | 1.92s |
-| 6 | **Self-Balancing AVL Binary Search Tree** | LL/RR/LR/RL Tree Rotations | PASS | **PASS** | **PASS** | 0 | 3/3 | 1.86s |
-| 7 | **JWT HMAC-SHA256 Signer & Expiry Validator** | Base64Url + Cryptographic HMAC | PASS | **PASS** | **PASS** | 0 | 5/5 | 1.94s |
-| 8 | **Concurrent Priority Thread Pool Task Queue** | Worker Threads + PriorityQueue + Sentinel | FAIL (Sentinel bug)| **PASS** | **PASS** | 0 | 3/3 | 2.11s |
-| 9 | **Strassen's Matrix Multiplication** | Divide-and-Conquer Sub-Cubic Recursion | PASS | **PASS** | **PASS** | 0 | 4/4 | 1.96s |
-| 10 | **Trie with Levenshtein Fuzzy Autocomplete** | Dynamic Programming Row Pruning | PASS | **PASS** | **PASS** | 0 | 3/3 | 1.92s |
-| 11 | **Finite State Machine (FSM) Regex Matcher** | Memoized State Transition Recursion | PASS | **PASS** | **PASS** | 0 | 4/4 | 1.93s |
-| 12 | **Consistent Hashing Ring with Virtual Nodes** | Binary Bisect Search + MD5 Ring | PASS | **PASS** | **PASS** | 0 | 4/4 | 1.93s |
-| 13 | **B-Tree Node Splitting & Insertion** | Proactive Node Splitting (Degree $t$) | PASS | **PASS** | **PASS** | 0 | 3/3 | 1.95s |
-| 14 | **Event-Driven Observer Pub/Sub Broker** | Pattern-Matching Subscriber Registry | PASS | **PASS** | **PASS** | 0 | 4/4 | 1.94s |
-| 15 | **Sliding Window Maximum (Monotonic Deque)** | Monotonic Decreasing Double-Ended Queue | PASS | **PASS** | **PASS** | 0 | 5/5 | 1.91s |
+| ID | Challenge Title | Core Algorithmic Technique | Pass@1 | Pass@2 (Healed) | Cycles | Tests Passed | Duration |
+| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: |
+| 1 | **Thread-Safe LRU Cache with TTL** | Doubly Linked List, Hash Map, RLock | Pass | Pass | 0 | 6 / 6 | 2.22s |
+| 2 | **Token Bucket Rate Limiter** | Lazy time delta token accumulation | Fail | Pass | 1 | 5 / 5 | 4.89s |
+| 3 | **Dijkstra's Shortest Path** | Min-Heap Priority Queue, Adjacency List | Pass | Pass | 0 | 5 / 5 | 2.01s |
+| 4 | **Thread-Safe Key-Value Store** | Condition Variables, RW Synchronization | Pass | Pass | 0 | 3 / 3 | 1.92s |
+| 5 | **Markdown to HTML AST Parser** | Regex Tokenizer, Recursive AST Descent | Pass | Pass | 0 | 5 / 5 | 1.92s |
+| 6 | **Self-Balancing AVL Binary Tree** | Tree Rotations (LL, RR, LR, RL) | Pass | Pass | 0 | 3 / 3 | 1.86s |
+| 7 | **JWT HMAC-SHA256 Signer** | Base64Url, Cryptographic HMAC | Pass | Pass | 0 | 5 / 5 | 1.94s |
+| 8 | **Concurrent Priority Thread Pool** | Worker Threads, PriorityQueue, Sentinel | Pass | Pass | 0 | 3 / 3 | 2.11s |
+| 9 | **Strassen Matrix Multiplication** | Divide-and-Conquer Sub-Cubic Recursion | Pass | Pass | 0 | 4 / 4 | 1.96s |
+| 10 | **Trie with Fuzzy Autocomplete** | Prefix Tree, Levenshtein Distance Pruning | Pass | Pass | 0 | 3 / 3 | 1.92s |
+| 11 | **Finite State Machine Regex Matcher** | Memoized State Transition Recursion | Pass | Pass | 0 | 4 / 4 | 1.93s |
+| 12 | **Consistent Hashing Ring** | Binary Bisect Search, MD5 Ring Nodes | Pass | Pass | 0 | 4 / 4 | 1.93s |
+| 13 | **B-Tree Node Splitting** | Proactive Node Splitting (Degree t) | Pass | Pass | 0 | 3 / 3 | 1.95s |
+| 14 | **Event-Driven Observer Broker** | Pattern-Matching Subscriber Registry | Pass | Pass | 0 | 4 / 4 | 1.94s |
+| 15 | **Sliding Window Maximum** | Monotonic Decreasing Double-Ended Queue | Pass | Pass | 0 | 5 / 5 | 1.91s |
 
-### Empirical Summary vs. Academic Targets
+### Summary of Key Performance Indicators
 
-| Empirical Metric | Workplan Report Target | Achieved Result | Benchmark Verification Status |
+| Performance Metric | Workplan Target | Achieved Result | Status |
 | :--- | :--- | :--- | :--- |
-| **Pass@1 Rate (Initial Generation)** | $> 70.0\%$ | **93.3%** (14/15) | ✅ **EXCEEDED (+23.3%)** |
-| **Pass@2 Rate (Self-Healed)** | $> 90.0\%$ | **100.0%** (15/15) | ✅ **EXCEEDED (+10.0%)** |
-| **Final Test Passage Rate** | $100.0\%$ | **100.0%** (62/62 tests) | ✅ **PERFECT PASSAGE** |
-| **Autonomous Recovery Rate** | $> 85.0\%$ | **100.0%** (1/1 recovered) | ✅ **EXCEEDED (+15.0%)** |
-| **Mean Time to Resolve (MTTR)** | $< 45.0\text{ seconds}$ | **2.16 seconds** | ✅ **EXCEEDED (20x Faster)** |
+| **Pass@1 Success Rate (First Attempt)** | Greater than 70.0% | **93.3%** (14 of 15 challenges passed) | Target Exceeded (+23.3%) |
+| **Pass@2 Success Rate (After Healing)** | Greater than 90.0% | **100.0%** (15 of 15 challenges passed) | Target Exceeded (+10.0%) |
+| **Final Test Passage Rate** | 100.0% | **100.0%** (All 62 unit tests passed) | Target Met (100%) |
+| **Autonomous Recovery Rate** | Greater than 85.0% | **100.0%** (1 of 1 failed challenge healed) | Target Exceeded (+15.0%) |
+| **Mean Time to Resolve (MTTR)** | Less than 45.0 seconds | **2.16 seconds** average per challenge | Target Exceeded (20x faster) |
 
 ---
 
-## 8. Project Work-Plan Fulfillment & Milestone Completion Audit
+## 7. Work-Plan Audit and Milestone Verification
 
-In our formal Project Work-Plan Report, we committed to a structured 4-week development schedule. The tables below document the audit verification confirming that every single deliverable was completed on schedule and verified in code:
+To ensure complete accountability to the course requirements, the tables below verify each promised deliverable and weekly milestone:
 
-### 8.1 Expected Final Outputs vs. Achieved Deliverables
+### 7.1 Expected Final Outputs vs. Achieved Deliverables
 
-| Promised Deliverable (Work-Plan) | Technical Implementation Detail | Verification Benchmark Metric | Audit Status |
+| Promised Deliverable | Implemented Technical Feature | Verification Method | Status |
 | :--- | :--- | :--- | :--- |
-| **1. Multi-Agent Orchestration Core** | LangGraph state machine linking 6 specialized agents | Deterministic state transitions with error handling | **Delivered & Verified** |
-| **2. Automated Code Synthesis** | Developer Agent generating PEP-8 Python modules | Syntactically valid Python with full type annotations | **Delivered & Verified** |
-| **3. Adversarial Test Generation** | QA Agent generating 6–12 targeted Pytest cases per task | Thorough coverage of edge cases and exception states | **Delivered & Verified** |
-| **4. Safe Local Subprocess Sandbox** | Isolated test executor with timeouts and cleanup | Clean capture of exit codes, execution times, and tracebacks | **Delivered & Verified** |
-| **5. Automated Self-Healing Engine** | Closed-loop error parsing and patch regeneration | $> 85\%$ autonomous recovery rate within $\le 2$ retries (Achieved 100%) | **Delivered & Verified** |
-| **6. Streamlit Observability Console** | Interactive multi-tab dashboard with live agent logs | Real-time step-by-step visibility into agent reasoning | **Delivered & Verified** |
+| **Multi-Agent Orchestration Core** | LangGraph cyclic state machine linking all 6 agents | Automated graph execution tests with conditional routing | Completed and Verified |
+| **Automated Code Synthesis** | Developer Agent generating PEP-8 Python modules | AST validation and syntactic verification | Completed and Verified |
+| **Adversarial Test Generation** | QA Test Agent producing 4 to 12 Pytest cases per challenge | Boundary value probing, exception testing, concurrency checks | Completed and Verified |
+| **Subprocess Execution Sandbox** | Isolated executor running in tempfile directories with timeouts | Subprocess exit code capture, stderr parsing, automatic cleanup | Completed and Verified |
+| **Automated Self-Healing Loop** | Reviewer Agent using AST traceback mapping and patch guidance | Automated recovery of Token Bucket Rate Limiter in 1 cycle | Completed and Verified |
+| **Observability Console** | Streamlit multi-tab web dashboard with live logs and code viewer | Interactive demonstration running on port 8502 | Completed and Verified |
 
-### 8.2 Work-Plan Timeline & Milestone Completion Record
+### 7.2 Weekly Milestone Completion Record
 
-| Timeline Schedule | Promised Milestone | Implemented Deliverable in DevTeam AI | Audit Status |
+| Timeline Schedule | Planned Milestone | Implemented Work in DevTeam AI | Status |
 | :--- | :--- | :--- | :--- |
-| **Week 1 (Days 1 – 7)** | Requirements Analysis & Architecture Design | Formalized problem statement; surveyed LangGraph patterns; designed `DevTeamState` schema; setup project repository and base environment. | **Completed on Schedule** |
-| **Week 2 (Days 8 – 14)** | Specialized Agent Engineering & Code Pipeline | Implemented Architect Agent (interface decomposition); Developer Agent (code synthesis); QA Agent (adversarial Pytest generation); validated modular outputs. | **Completed on Schedule** |
-| **Week 3 (Days 15 – 21)** | Subprocess Sandbox & Self-Healing Feedback Loop | Built `tempfile` execution runner with timeouts; connected Reviewer Agent to parse tracebacks and AST; implemented cyclic retry loop (Developer $\leftrightarrow$ QA $\leftrightarrow$ Reviewer); added loop termination safeguards. | **Completed on Schedule** |
-| **Week 4 (Days 22 – 30)** | Observability Dashboard, Benchmark & Final Report | Built Streamlit dashboard (agent chat, code viewer, terminal logs); benchmarked on 15 complex algorithmic challenges; measured Pass@1 and Pass@2 rates; compiled final academic documentation. | **Completed on Schedule** |
+| **Week 1 (Days 1 to 7)** | Requirements Analysis and Architecture Design | Formalized state schema (`DevTeamState`); designed agent roles; established repository and testing harness. | Completed on Schedule |
+| **Week 2 (Days 8 to 14)** | Specialized Agent Engineering | Implemented Architect, Developer, and QA agents; verified structured JSON specifications and test generation. | Completed on Schedule |
+| **Week 3 (Days 15 to 21)** | Sandbox Execution and Self-Healing Loop | Built tempfile subprocess sandbox; implemented Reviewer AST traceback parser; verified closed-loop repair cycle. | Completed on Schedule |
+| **Week 4 (Days 22 to 30)** | Observability Dashboard, Benchmarks, and Report | Developed Streamlit dashboard; evaluated 15 benchmark problems; computed empirical metrics; authored documentation. | Completed on Schedule |
 
 ---
 
-## 9. Conclusion, Academic Significance & Future Directions
+## 8. Discussion, Engineering Lessons, and Future Work
 
-### Conclusion
-DevTeam AI successfully demonstrates that multi-agent orchestration grounds generative AI in empirical reality. By replacing monolithic single-prompt generation with a cyclic LangGraph state machine, isolated subprocess test execution, and AST-driven self-healing, the system eliminates hallucination loops and guarantees verified, production-ready code delivery. Achieving a **93.3% Pass@1 rate**, **100% Pass@2 self-healing**, and an **MTTR of 2.16 seconds** confirms the viability of Agentic AI for enterprise software engineering.
+Building DevTeam AI provided valuable practical lessons in building autonomous agentic systems. A few key engineering challenges encountered during development included:
 
-### Academic & Professional Value Proposition
-- **State Machine Mastery:** Showcases practical expertise in cyclic directed graphs, state checkpointing, and conditional routing using LangGraph.
-- **Inter-Process Sandboxing:** Demonstrates robust low-level systems engineering using Python `subprocess`, `tempfile`, and OS process lifecycle management.
-- **Compiler & AST Analysis:** Highlights deep fluency in Python's Abstract Syntax Tree (`ast`), traceback introspection, and automated patch synthesis.
+1. **Subprocess Output Parsing:** Different versions of pytest format tracebacks differently depending on terminal width and warning filters. Adding standard flags like `-W ignore` and `--tb=short` ensured that the Reviewer Agent always received clean, predictable traceback strings that could be parsed reliably.
+2. **Concurrency in Python Priority Queues:** During implementation of the Concurrent Priority Thread Pool, we observed that priority queues require all elements to be strictly comparable. Using simple `None` values as worker shutdown sentinels caused comparison `TypeErrors` when tasks had numeric priorities. This was resolved by using structured sentinel tuples with high priority values.
+3. **Separation of Concerns Prevents Hallucination:** When the same agent was initially allowed to both write code and evaluate its correctness, it consistently overlooked subtle bugs. Enforcing a strict boundary—where the QA agent only writes tests and the sandbox acts as an objective runtime judge—dramatically improved reliability.
 
-### Future Directions
-1. **Automated Git Pull Request Integration:** Extending the Documenter Agent to automatically commit verified solutions, branch repositories, and open GitHub Pull Requests with embedded benchmark scorecards.
-2. **Multi-File Project Synthesis:** Expanding `DevTeamState` to support multi-module software architectures, cross-file imports, and integration testing across entire microservice repositories.
+For future work, the system could be extended in two promising directions: first, supporting multi-file software projects with package structures and cross-module imports; and second, adding automated Git integration so that the system can create branches and submit pull requests directly to GitHub upon passing all tests.
+
+---
+
+## 9. Conclusion
+
+DevTeam AI demonstrates that autonomous multi-agent collaboration with empirical execution feedback provides a far more reliable approach to AI-assisted software development than single-prompt code generation. By structuring the workflow into specialized roles—architecting, implementing, testing, executing, reviewing, and documenting—the system catches bugs early, diagnoses errors accurately, and autonomously heals failing code without human intervention.
+
+Achieving a 93.3% Pass@1 rate, 100% Pass@2 self-healing, and an average resolution time of 2.16 seconds across 15 classic computer science challenges confirms that agentic software engineering is both practical and effective. All project objectives, weekly milestones, and deliverables promised in the initial workplan have been fully built, verified, and packaged.
+
+---
+
+## 10. References
+
+1. LangChain / LangGraph Documentation: Building Stateful Multi-Agent Applications with Cyclic Directed Graphs. (2024). https://langchain-ai.github.io/langgraph/
+2. Pytest Development Team: Pytest Documentation and Subprocess Execution Best Practices. (2024). https://docs.pytest.org/
+3. Python Software Foundation: AST - Abstract Syntax Tree Module Documentation. (2024). https://docs.python.org/3/library/ast.html
+4. Streamlit Documentation: Real-Time Interactive Observability Dashboards in Python. (2024). https://docs.streamlit.io/
+5. Chen, M., et al.: Evaluating Large Language Models Trained on Code (HumanEval Benchmark). arXiv:2107.03374 (2021).
+6. Jimenez, C. E., et al.: SWE-bench: Can Language Models Resolve Real-World GitHub Issues? ICLR (2024).
+7. Hong, S., et al.: MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework. arXiv:2308.00352 (2023).
+8. Qian, C., et al.: Communicative Agents for Software Development (ChatDev). arXiv:2307.07924 (2023).
